@@ -5,32 +5,34 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js -e html,js,css"
+    "dev": "nodemon server.js -e html,js,css",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uhsk/mach.git"
+    "url": "git+https://github.com/v0rd/mach.git"
   },
   "keywords": [
     "todo"
   ],
-  "author": "uhsk",
+  "author": "v0rd",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/uhsk/mach/issues"
+    "url": "https://github.com/v0rd/mach/issues"
   },
-  "homepage": "https://github.com/uhsk/mach#readme",
+  "homepage": "https://github.com/v0rd/mach#readme",
   "dependencies": {
     "@hapi/boom": "^7.4.2",
     "@hapi/hapi": "^18.3.1",
+    "@hapi/hoek": "^8.0.2",
     "@hapi/inert": "^5.1.2",
     "@hapi/joi": "^15.0.3",
     "@hapi/vision": "^5.4.4",
-    "hapi-pino": "^5.4.1",
-    "knex": "^0.16.5",
+    "global": "^4.4.0",
+    "knex": "^0.19.0",
     "pg": "^7.8.2"
   },
   "devDependencies": {
-    "nodemon": "^1.18.10"
+    "nodemon": "^1.19.1"
   }
 }
