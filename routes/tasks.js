@@ -4,16 +4,21 @@ const Task = require('../models/tasks.js');
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
 
-const tasksSchema = Joi.object().keys({
+const postTaskSchema = Joi.object().keys({
+  list_id: Joi.number().integer().min(1),
+  name: Joi.string(),
+  user_created: Joi.number().integer().min(1),
+});
+
+const patchTaskSchema = Joi.object().keys({
   task_id: Joi.number().integer().min(1),
   list_id: Joi.number().integer().min(1),
-  name: Joi.string().alphanum(),
+  name: Joi.string(),
   completed: Joi.boolean(),
   user_completed: Joi.number().integer().min(1),
   asignee_id: Joi.number().integer().min(1),
-  due_date: Joi.date(),
-  time_reminder: Joi.date(),
-  user_created: Joi.number().integer().min(1),
+  due_date: Joi.date().iso(),
+  time_reminder: Joi.date().iso(),
 });
 
 module.exports = [ 
@@ -46,8 +51,17 @@ module.exports = [
     method: 'POST',
     path: '/api/tasks',
     handler: async (request, h) => {
+      let err;
       let required = ['name', 'list_id', 'user_created'];
       let pl = request.payload;
+      
+      // check for parameters with a wrong value
+      Joi.validate(pl, postTaskSchema, { abortEarly: false }, error => { 
+        if(error) {
+          err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
+          err.output.payload.detail = err.data;
+        }
+      });
 
       // check required keys
       Object.keys(pl).filter(k => {
@@ -57,9 +71,12 @@ module.exports = [
       });
 
       if(required.length > 0) {
-        let error = new Boom('missing parameter(s)', { statusCode: 400, data: required });
-        error.output.payload.detail = error.data;
-        return error;
+        err = new Boom('missing parameter(s)', { statusCode: 400, data: required });
+        err.output.payload.detail = err.data;
+      }
+
+      if(err && err instanceof Boom) {
+        return err;
       }
 
       return Task.newTask(pl.name, pl.list_id, pl.user_created)
@@ -88,7 +105,8 @@ module.exports = [
   {
     method: 'PATCH',
     path: '/api/tasks/{task_id}',
-    handler: async (request, h) => {
+    handler: async (request) => {
+      let err;
       let pl = request.payload;
       let task = await Task.getTask(request.params.task_id);
 
@@ -97,10 +115,16 @@ module.exports = [
 
       // filter not existings tasks
       if(task.length === 0) {
-        return Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
+        err = Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
       }
 
-      Joi.validate(pl, tasksSchema, err => h.response(Boom.boomify(err, { statusCode: 400 })));
+      // check for parameters with a wrong value
+      Joi.validate(pl, patchTaskSchema, { abortEarly: false }, error => { 
+        if(error) {
+          err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
+          err.output.payload.detail = err.data;
+        }
+      });
 
       // filter requests with anomaly in keys
       let diff = [];
@@ -111,10 +135,11 @@ module.exports = [
       });
 
       if(diff.length > 0) {
-        let error = new Boom('unexpected key(s) in object.', { statusCode: 400, data: diff });
-        error.output.payload.detail = error.data;
-        return error;
+        err = new Boom('unexpected key(s) in object.', { statusCode: 400, data: diff });
+        err.output.payload.detail = err.data;
       }
+
+      // PARAMETER VALIDATION
 
       if(pl.list_id) {
         task[0].list_id = pl.list_id;
@@ -148,9 +173,11 @@ module.exports = [
           if(allowed_to_remove.includes(key)) task[0][key] = null;
         });
       }
-      
-      // validate new task againts joi schema
-      Joi.validate(task[0], tasksSchema, (err) => console.log(err.details));
+
+      //Joi.validate(task[0], dbTasksSchema, err => console.log(err));
+      if(err && err instanceof Boom) {
+        return err;
+      }
 
       return Task.editTask(task[0]);
     },
