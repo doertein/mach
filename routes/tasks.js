@@ -164,7 +164,6 @@ module.exports = [
       }
 
       if(pl.time_reminder) {
-        console.log(pl.time_reminder);
         task[0].time_reminder = new Date(pl.time_reminder);
       }
 
