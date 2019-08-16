@@ -116,7 +116,8 @@ module.exports = [
       // filter not existings tasks
       if(task.length === 0) {
         err = Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
-      }
+          return err;
+        }
 
       // check for parameters with a wrong value
       Joi.validate(pl, patchTaskSchema, { abortEarly: false }, error => { 
