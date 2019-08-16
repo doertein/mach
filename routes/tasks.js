@@ -19,6 +19,7 @@ const patchTaskSchema = Joi.object().keys({
   asignee_id: Joi.number().integer().min(1),
   due_date: Joi.date().iso(),
   time_reminder: Joi.date().iso(),
+  remove: Joi.array().items(Joi.string())
 });
 
 module.exports = [ 
@@ -179,6 +180,8 @@ module.exports = [
         return err;
       }
 
+      console.log(111);
+      console.log(task[0]);
       return Task.editTask(task[0]);
     },
   },

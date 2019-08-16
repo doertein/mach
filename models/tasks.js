@@ -21,8 +21,6 @@ module.exports = class Task {
   }
 
   static editTask(task) {
-    //console.log(task);
-    return false;
     return Db('tasks').update(task).where('task_id', task.task_id).returning('*');
   }
 
