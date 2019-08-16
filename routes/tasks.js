@@ -114,9 +114,9 @@ module.exports = [
       // define attributes that are removable
       let allowed_to_remove = ['asignee_id', 'timer_reminder', 'due_date'];
 
-      // filter not existings tasks
+      // filter not existings tasks and give back the error
       if(task.length === 0) {
-        err = Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
+          err = Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
           return err;
         }
 
@@ -136,6 +136,7 @@ module.exports = [
         if(!accepted_keys.includes(key) && key !== 'remove') diff.push(key);
       });
 
+      // there are keys that were not expected so we give an error
       if(diff.length > 0) {
         err = new Boom('unexpected key(s) in object.', { statusCode: 400, data: diff });
         err.output.payload.detail = err.data;
