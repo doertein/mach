@@ -6,8 +6,8 @@ const Joi = require('@hapi/joi');
 
 const postTaskSchema = Joi.object().keys({
   list_id: Joi.number().integer().min(1).required(),
-  name: Joi.string(),
-  user_created: Joi.number().integer().min(1),
+  name: Joi.string().required(),
+  user_created: Joi.number().integer().min(1).required(),
 });
 
 const patchTaskSchema = Joi.object().keys({
@@ -19,7 +19,7 @@ const patchTaskSchema = Joi.object().keys({
   asignee_id: Joi.number().integer().min(1),
   due_date: Joi.date().iso(),
   time_reminder: Joi.date().iso(),
-  remove: Joi.array().items(Joi.string())
+  remove: Joi.array().items(Joi.string()),
 });
 
 module.exports = [ 
@@ -28,8 +28,14 @@ module.exports = [
     path: '/api/tasks',
     handler: (request) => {
       if(!request.query.list_id) {
-        return Boom.badRequest('missing list id');
+        throw Boom.badRequest('missing list id');
       }
+
+      Joi.validate(request.query.list_id, Joi.number().integer().min(1), error => {
+        if(error) {
+          throw new Boom('list_id has to be an integer', { statusCode: 400 });
+        }
+      });
 
       return Task.getTasks(request.query.list_id);
     },
@@ -38,11 +44,17 @@ module.exports = [
     method: 'GET',
     path: '/api/tasks/{task_id}',
     handler: async (request) => {
+      Joi.validate(request.params.task_id, Joi.number().integer().min(1), error => {
+        if(error) {
+          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
+        }
+      });
+
       let task = await Task.getTask(request.params.task_id);
 
       // filter not existings tasks
       if(task.length === 0) {
-        return Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
+        throw Boom.notFound('No resource(s) found for [' + request.params.task_id + ']');
       }
 
       return Task.getTask(request.params.task_id);
@@ -52,33 +64,17 @@ module.exports = [
     method: 'POST',
     path: '/api/tasks',
     handler: async (request, h) => {
-      let err;
-      let required = ['name', 'list_id', 'user_created'];
       let pl = request.payload;
-      
+
       // check for parameters with a wrong value
       Joi.validate(pl, postTaskSchema, { abortEarly: false }, error => { 
         if(error) {
-          let err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
+          let err = new Boom('Invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
           err.output.payload.detail = err.data;
+
+          throw err;
         }
       });
-
-      // check required keys
-      Object.keys(pl).filter(k => {
-        required = required.filter(r => { 
-          return r !== k; 
-        });
-      });
-
-      if(required.length > 0) {
-        err = new Boom('missing parameter(s)', { statusCode: 400, data: required });
-        err.output.payload.detail = err.data;
-      }
-
-      if(err && err instanceof Boom) {
-        return err;
-      }
 
       return Task.newTask(pl.name, pl.list_id, pl.user_created)
         .then(data => { 
@@ -90,26 +86,17 @@ module.exports = [
     method: 'DELETE',
     path: '/api/tasks/{task_id}',
     handler: async (request, h) => {
-      let err;
-
-      // check for parameters with a wrong value
-      Joi.validate(request.params.task_id, Joi.number().integer().required(), { abortEarly: false }, error => { 
+      Joi.validate(request.params.task_id, Joi.number().integer().min(1), error => {
         if(error) {
-          console.log(error);
-          err = new Boom('valid id needed.', { statusCode: 400, data: error.details.map( e => e.message ) });
-          err.output.payload.detail = err.data;
+          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
         }
       });
-
-      if(err && err instanceof Boom) {
-        return err;
-      }
 
       let task = await Task.getTask(request.params.task_id);
 
       // filter not existings tasks
       if(task.length === 0) {
-        return Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
+        throw Boom.notFound('No resource(s) found for [' + request.params.task_id + ']');
       }
 
       return Task.deleteTask(request.params.task_id)
@@ -131,15 +118,16 @@ module.exports = [
 
       // filter not existings tasks and give back the error
       if(task.length === 0) {
-          err = Boom.notFound('no resource(s) found for [' + request.params.task_id + ']');
-          return err;
-        }
+        throw Boom.notFound('No resource(s) found for [' + request.params.task_id + ']');
+      }
 
       // check for parameters with a wrong value
       Joi.validate(pl, patchTaskSchema, { abortEarly: false }, error => { 
         if(error) {
           err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
           err.output.payload.detail = err.data;
+
+          throw err;
         }
       });
 
@@ -153,8 +141,10 @@ module.exports = [
 
       // there are keys that were not expected so we give an error
       if(diff.length > 0) {
-        err = new Boom('unexpected key(s) in object.', { statusCode: 400, data: diff });
+        err = new Boom('Unexpected key(s) in object.', { statusCode: 400, data: diff });
         err.output.payload.detail = err.data;
+
+        throw err;
       }
 
       // PARAMETER VALIDATION
@@ -187,13 +177,11 @@ module.exports = [
 
       if(pl.remove && pl.remove.length > 0) {
         pl.remove.filter(key => {
-          if(allowed_to_remove.includes(key)) task[0][key] = null;
+          if(allowed_to_remove.includes(key)) {
+            console.log(key);
+            task[0][key] = null;
+          }
         });
-      }
-
-      //Joi.validate(task[0], dbTasksSchema, err => console.log(err));
-      if(err && err instanceof Boom) {
-        return err;
       }
 
       return Task.editTask(task[0]);
