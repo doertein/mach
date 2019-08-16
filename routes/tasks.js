@@ -5,7 +5,7 @@ const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
 
 const postTaskSchema = Joi.object().keys({
-  list_id: Joi.number().integer().min(1),
+  list_id: Joi.number().integer().min(1).required(),
   name: Joi.string(),
   user_created: Joi.number().integer().min(1),
 });
@@ -59,7 +59,7 @@ module.exports = [
       // check for parameters with a wrong value
       Joi.validate(pl, postTaskSchema, { abortEarly: false }, error => { 
         if(error) {
-          err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
+          let err = new Boom('invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
           err.output.payload.detail = err.data;
         }
       });
@@ -90,6 +90,21 @@ module.exports = [
     method: 'DELETE',
     path: '/api/tasks/{task_id}',
     handler: async (request, h) => {
+      let err;
+
+      // check for parameters with a wrong value
+      Joi.validate(request.params.task_id, Joi.number().integer().required(), { abortEarly: false }, error => { 
+        if(error) {
+          console.log(error);
+          err = new Boom('valid id needed.', { statusCode: 400, data: error.details.map( e => e.message ) });
+          err.output.payload.detail = err.data;
+        }
+      });
+
+      if(err && err instanceof Boom) {
+        return err;
+      }
+
       let task = await Task.getTask(request.params.task_id);
 
       // filter not existings tasks
