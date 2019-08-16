@@ -180,8 +180,6 @@ module.exports = [
         return err;
       }
 
-      console.log(111);
-      console.log(task[0]);
       return Task.editTask(task[0]);
     },
   },
