@@ -28,7 +28,7 @@ module.exports = [
     path: '/api/tasks',
     handler: (request) => {
       if(!request.query.list_id) {
-        throw Boom.badRequest('missing list id');
+        throw Boom.badRequest('Missing list_id');
       }
 
       Joi.validate(request.query.list_id, Joi.number().integer().min(1), error => {
