@@ -62,12 +62,19 @@ module.exports = [
           throw new Boom('The identifier has to be an integer', { statusCode: 400 });
         }
       });
+
+      return List.deleteList(request.params.list_id);
     },
   },
   {
     method: 'PATCH',
     path: '/api/lists/{list_id}',
     handler: async (request, h) => {
+      Joi.validate(request.params.list_id, Joi.number().integer().min(1), error => {
+        if(error) {
+          throw new Boom('The identifier has to be an integer', { statusCode: 400 })
+        }
+      })
     },
   },
 ];
