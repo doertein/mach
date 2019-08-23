@@ -72,9 +72,9 @@ module.exports = [
     handler: async (request, h) => {
       Joi.validate(request.params.list_id, Joi.number().integer().min(1), error => {
         if(error) {
-          throw new Boom('The identifier has to be an integer', { statusCode: 400 })
+          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
         }
-      })
+      });
     },
   },
 ];
