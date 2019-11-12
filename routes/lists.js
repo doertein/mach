@@ -9,6 +9,11 @@ const postListSchema = Joi.object().keys({
   owner_id: Joi.number().integer().min(1).required(),
 });
 
+const patchListSchema = Joi.object().keys({
+  name: Joi.string(),
+  owner_id: Joi.number().integer().min(1),
+});
+
 module.exports = [ 
   {
     method: 'GET',
@@ -75,6 +80,28 @@ module.exports = [
           throw new Boom('The identifier has to be an integer', { statusCode: 400 });
         }
       });
+
+      let pl = request.payload;
+
+      // filter requests with anomaly in keys
+      let diff = [];
+      let keys = Object.keys(pl);
+      let accepted_keys = ['name', 'list_id'];
+      keys.filter((key) => {
+        if(!accepted_keys.includes(key) && key !== 'remove') diff.push(key);
+      });
+
+      // there are keys that were not expected so we give an error
+      if(diff.length > 0) {
+        let err = new Boom('Unexpected key(s) in object.', { statusCode: 400, data: diff });
+        err.output.payload.detail = err.data;
+
+        throw err;
+      }
+
+      let list = await List.getList(request.params.list_id);
+      console.log(Joi.string().validate(pl.name));
+      return list;
     },
   },
 ];
