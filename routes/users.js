@@ -3,6 +3,12 @@
 const Db = require('../db');
 const userModel = require('../models/users.js');
 
+const registerSchema = Joi.object().keys({
+  email: Joi.string.email().required(),
+  password: Joi.string.pattern(),
+  repeat_password: Joi.ref('password'),
+});
+
 module.exports = [
   {
     method: 'POST',
