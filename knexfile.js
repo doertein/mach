@@ -1,11 +1,13 @@
+require('dotenv').config();
+
 module.exports = {
 
   development: {
     client: 'postgresql',
     connection: {
-      database: 'mach',
-      user:     'mach_api',
-      password: 'machtest',
+      database: process.env.DB_NAME,
+      user:     process.env.DB_USER,
+      password: process.env.DB_PASS,
     },
     pool: {
       min: 2,

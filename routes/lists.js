@@ -9,11 +9,6 @@ const postListSchema = Joi.object().keys({
   owner_id: Joi.number().integer().min(1).required(),
 });
 
-const patchListSchema = Joi.object().keys({
-  name: Joi.string(),
-  owner_id: Joi.number().integer().min(1),
-});
-
 module.exports = [ 
   {
     method: 'GET',
@@ -27,11 +22,10 @@ module.exports = [
     method: 'GET',
     path: '/api/lists/{list_id}',
     handler: async (request) => {
-      Joi.validate(request.params.list_id, Joi.number().integer().min(1), error => {
-        if(error) {
-          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
-        }
-      });
+      let validation = Joi.number().integer().min(1).validate(request.params.list_id);
+      if(validation.error) {
+        throw Boom.badRequest('The identifier has to be an integer');
+      }
 
       return List.getList(request.params.list_id);
     },
@@ -43,14 +37,13 @@ module.exports = [
       let pl = request.payload;
 
       // check for parameters with a wrong value
-      Joi.validate(pl, postListSchema, { abortEarly: false }, error => { 
-        if(error) {
-          let err = new Boom('Invalid parameters given.', { statusCode: 400, data: error.details.map( e => e.message ) });
-          err.output.payload.detail = err.data;
+      let validation = postListSchema.validate(pl, { abortEarly: false, errors: { escapeHtml: true } });
+      if(validation.error) {
+        let err = Boom.badRequest('Invalid parameters given.');
+        err.output.payload.detail = validation.error;
 
-          throw err;
-        }
-      });
+        throw err;
+      }
 
       return List.newList(pl.name, pl.owner_id)
         .then(data => { 
@@ -62,11 +55,10 @@ module.exports = [
     method: 'DELETE',
     path: '/api/lists/{list_id}',
     handler: async (request, h) => {
-      Joi.validate(request.params.list_id, Joi.number().integer().min(1), error => {
-        if(error) {
-          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
-        }
-      });
+      let validation = Joi.number().integer().min(1).validate(request.params.list_id);
+      if(validation.error) {
+        throw Boom.badRequest('The identifier has to be an integer');
+      }
 
       return List.deleteList(request.params.list_id);
     },
@@ -75,11 +67,10 @@ module.exports = [
     method: 'PATCH',
     path: '/api/lists/{list_id}',
     handler: async (request, h) => {
-      Joi.validate(request.params.list_id, Joi.number().integer().min(1), error => {
-        if(error) {
-          throw new Boom('The identifier has to be an integer', { statusCode: 400 });
-        }
-      });
+      let validation = Joi.number().integer().min(1).validate(request.params.list_id);
+      if(validation.error) {
+        throw Boom.badRequest('The identifier has to be an integer');
+      }
 
       let pl = request.payload;
 
@@ -93,9 +84,7 @@ module.exports = [
 
       // there are keys that were not expected so we give an error
       if(diff.length > 0) {
-        let err = new Boom('Unexpected key(s) in object.', { statusCode: 400, data: diff });
-        err.output.payload.detail = err.data;
-
+        let err = Boom.badRequest('Unexpected key(s) in object.');
         throw err;
       }
 

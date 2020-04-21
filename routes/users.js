@@ -2,10 +2,11 @@
 
 const Db = require('../db');
 const userModel = require('../models/users.js');
+const Joi = require('@hapi/joi');
 
 const registerSchema = Joi.object().keys({
-  email: Joi.string.email().required(),
-  password: Joi.string.pattern(),
+  email: Joi.string().email().required(),
+  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
   repeat_password: Joi.ref('password'),
 });
 
