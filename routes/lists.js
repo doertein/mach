@@ -3,16 +3,12 @@
 const List = require('../models/lists.js');
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-
-const postListSchema = Joi.object().keys({
-  name: Joi.string().required(),
-  owner_id: Joi.number().integer().min(1).required(),
-});
+const listSchemas = require('../schemas/lists.js');
 
 module.exports = [ 
   {
     method: 'GET',
-    path: '/api/lists',
+    path: '/lists',
     handler: () => {
       //auth play a big factor here
       return List.getLists(1);
@@ -32,12 +28,12 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: '/api/lists',
+    path: '/lists',
     handler: async (request, h) => {
       let pl = request.payload;
 
       // check for parameters with a wrong value
-      let validation = postListSchema.validate(pl, { abortEarly: false, errors: { escapeHtml: true } });
+      let validation = listSchemas.newList.validate(pl, { abortEarly: false, errors: { escapeHtml: true } });
       if(validation.error) {
         let err = Boom.badRequest('Invalid parameters given.');
         err.output.payload.detail = validation.error;
@@ -53,7 +49,7 @@ module.exports = [
   },
   {
     method: 'DELETE',
-    path: '/api/lists/{list_id}',
+    path: '/lists/{list_id}',
     handler: async (request, h) => {
       let validation = Joi.number().integer().min(1).validate(request.params.list_id);
       if(validation.error) {
@@ -65,7 +61,7 @@ module.exports = [
   },
   {
     method: 'PATCH',
-    path: '/api/lists/{list_id}',
+    path: '/lists/{list_id}',
     handler: async (request, h) => {
       let validation = Joi.number().integer().min(1).validate(request.params.list_id);
       if(validation.error) {
@@ -89,7 +85,6 @@ module.exports = [
       }
 
       let list = await List.getList(request.params.list_id);
-      console.log(Joi.string().validate(pl.name));
       return list;
     },
   },

@@ -1,58 +1,74 @@
 "use strict";
 
+const Boom = require('@hapi/boom');
 const Db = require('../db');
-const userModel = require('../models/users.js');
+const Jwt = require('jsonwebtoken');
+const User = require('../models/users.js');
 const Joi = require('@hapi/joi');
+const userSchemas = require('../schemas/users.js');
+require('dotenv').config();
 
-const registerSchema = Joi.object().keys({
-  email: Joi.string().email().required(),
-  password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-  repeat_password: Joi.ref('password'),
-});
+const userModel = new User(Db);
 
 module.exports = [
   {
     method: 'POST',
     path: '/users/register',
     handler: async(request, h) => {
-      let query = `INSERT INTO 
-                     users
-                  (
-                    user_email,
-                    user_creation_time
-                  )
-                   VALUES
-                   (
-                    $1,
-                    NOW()
-                   )`;
-      let pl = request.payload;
-      let values = [pl.user_email];
+      const validation = userSchemas.register.validate(request.payload, { abortEarly: false, errors: { escapeHtml: true } });
+      if(validation.error) {
+        let err = Boom.badRequest('invalid parameters given.');
+        err.output.payload.detail = validation.error.details;
 
-      try {
-        let res = await Db.query(query, value);
-        if(res && res.rowCount === 1) { 
-          return {
-            success: true,
-          };
-        } else {
-          return {
-            success: false,
-          };
-        }
-      } catch(err) {
-        request.log(['error', 'database', 'users', 'register'], err);
-        return {
-          success: false,
-        };
+        throw err;
       }
+
+      let user = await userModel.register(request.payload.email, request.payload.password);
+      if(user.error) {
+        console.log(user.error.data);
+        throw Boom.badImplementation(user.error.message);
+      }
+
+      return { 'success': true, 'user': user };
     },
+    options: {
+      auth: false
+    }
+  },
+  {
+    method: 'POST',
+    path: '/users/login',
+    handler: async (request, h) => {
+      const validation = userSchemas.login.validate(request.payload, { abortEarly: false, errors: { escapeHtml: true } });
+      if(validation.error) {
+        let err = Boom.badRequest('invalid parameters given.');
+        err.output.payload.detail = validation.error.details;
+
+        throw err;
+      }
+
+      return userModel.login(request.payload.email, request.payload.password)
+        .then(res => {
+          if(res.error) {
+            let err = Boom.badRequest('Login failed');
+            err.output.payload.detail = res.error.message;
+            throw err;
+          }
+
+          let token = Jwt.sign({ user: res }, process.env.JWT_SECRET);
+          
+          return { 'user': res, 'token': token };
+        });
+    },
+    options: {
+      auth: false
+    }
   },
   {
     method: 'GET',
     path: '/users',
     handler: (request, h) => {
-      
+
     },
   }
 ]

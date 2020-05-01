@@ -1,33 +1,39 @@
 "use strict";
 
 const Hapi = require('@hapi/hapi');
-//const Inert = require('@hapi/inert');
-//const Vision = require('@hapi/vision');
-//const Handlebars = require('handlebars');
+const taskRoutes = require('./routes/tasks.js');
+const listRoutes = require('./routes/lists.js');
+const userRoutes = require('./routes/users.js');
 
 const server = new Hapi.Server({
   port: '4000',
 });
 
-const init = async () => {
-  //  await server.register([
-  //    { plugin: Inert },
-  //    { plugin: Vision },
-  //  ]);
-  //
-  //  server.views({
-  //    engines: {
-  //      html: Handlebars,
-  //    },
-  //    relativeTo: __dirname,
-  //    path: 'views/',
-  //  });
+function prefixRoutes(routes, prefix) {
+  routes.map((r) => {
+    r.path = `${prefix}${r.path}`;
+  });
 
-  //server.route(require('./routes/base.js'));
-  //server.route(require('./routes/index.js'));
-  server.route(require('./routes/tasks.js'));
-  server.route(require('./routes/lists.js'));
-  server.route(require('./routes/users.js'));
+  return routes;
+}
+
+const validate = async function (decoded, request, h) {
+  console.log(decoded);
+}
+
+const init = async () => {
+
+  await server.register(require('hapi-auth-jwt2'));
+  server.auth.strategy('jwt', 'jwt', {
+    key: process.env.JWT_SECRET,
+    validate
+  });
+
+  server.auth.default('jwt');
+
+  server.route(prefixRoutes(taskRoutes, '/api/v1'));
+  server.route(prefixRoutes(listRoutes, '/api/v1'));
+  server.route(prefixRoutes(userRoutes, '/api/v1'));
 
   server.events.on('log', (event, tags) => {
     if(tags.error) {

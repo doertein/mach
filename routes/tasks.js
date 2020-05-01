@@ -4,29 +4,12 @@ const Task = require('../models/tasks.js');
 const List = require('../models/lists.js');
 const Boom = require('@hapi/boom');
 const Joi = require('@hapi/joi');
-
-const postTaskSchema = Joi.object().keys({
-  list_id: Joi.number().integer().min(1).required(),
-  name: Joi.string().required(),
-  user_created: Joi.number().integer().min(1).required(),
-});
-
-const patchTaskSchema = Joi.object().keys({
-  task_id: Joi.number().integer().min(1),
-  list_id: Joi.number().integer().min(1),
-  name: Joi.string(),
-  completed: Joi.boolean(),
-  user_completed: Joi.number().integer().min(1),
-  asignee_id: Joi.number().integer().min(1),
-  due_date: Joi.date().iso(),
-  time_reminder: Joi.date().iso(),
-  remove: Joi.array().items(Joi.string()),
-});
+const taskSchemas = require('../schemas/tasks.js');
 
 module.exports = [ 
   {
     method: 'GET',
-    path: '/api/tasks',
+    path: '/tasks',
     handler: async (request) => {
       if(!request.query.list_id) {
         throw Boom.badRequest('Missing list_id');
@@ -47,7 +30,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/api/tasks/{task_id}',
+    path: '/tasks/{task_id}',
     handler: async (request) => {
       let validation = Joi.number().integer().min(1).validate(request.params.task_id);
       if(validation.error) {
@@ -66,12 +49,12 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: '/api/tasks',
+    path: '/tasks',
     handler: async (request, h) => {
       let pl = request.payload;
 
       // check for parameters with a wrong value
-      let validation = postTaskSchema.validate(pl, { abortEarly: false, errors: { escapeHtml: true } }); 
+      let validation = taskSchemas.newTask.validate(pl, { abortEarly: false, errors: { escapeHtml: true } }); 
       if(validation.error) {
         let err = Boom.badRequest('Invalid parameters given.');
         err.output.payload.detail = validation.error;
@@ -88,7 +71,7 @@ module.exports = [
   },
   {
     method: 'DELETE',
-    path: '/api/tasks/{task_id}',
+    path: '/tasks/{task_id}',
     handler: async (request, h) => {
       let validation = Joi.number().integer().min(1).validate(request.params.task_id);;
       if(validation.error) {
@@ -110,7 +93,7 @@ module.exports = [
   },
   {
     method: 'PATCH',
-    path: '/api/tasks/{task_id}',
+    path: '/tasks/{task_id}',
     handler: async (request) => {
       let err;
       let validation;
@@ -132,9 +115,9 @@ module.exports = [
       }
 
       // check for parameters with a wrong value
-      validation = patchTaskSchema.validate(pl, { abortEarly: false, errors: { escapeHtml: true } });
+      validation = taskSchemas.patchTask.validate(pl, { abortEarly: false, errors: { escapeHtml: true } });
       if(validation.error) {
-        err = Boom.badRequest('invalid parameters given.');
+        let err = Boom.badRequest('invalid parameters given.');
         err.output.payload.detail = validation.error;
 
         throw err;

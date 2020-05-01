@@ -8,6 +8,9 @@ exports.up = function(knex) {
 
       table.string('email').notNullable();
       table.datetime('time_created', { useTz : true }).notNullable();
+      table.binary('hash', 60);
+
+      table.unique('email');
     });
 };
 

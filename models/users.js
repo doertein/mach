@@ -1,15 +1,63 @@
-const Db = require('../db');
-module.exports = {
-  getAll: () => {
-    return [];
-  },
-  getById: (id) => {
-    let query = "SELECT * FROM users WHERE user_id = $1";
-    let values = [id];
+const bcrypt = require('bcrypt');
 
-    Db.query(query, values)
-      .then(res => console.log(res))
-      .catch(err => console.log(err.stack));
+class User {
+
+  constructor(db) {
+    this.db = db;
+  }
+  async register(email, password) {
+    let alreadyRegistered = await this.checkExistingEmails(email);
+
+    if(alreadyRegistered) return { error: { message: 'email_already_in_use', data: email } };
+
+    let rounds = 12;
+    return bcrypt.genSalt(rounds)
+      .then(salt => {
+        return bcrypt.hash(password, salt);
+      })
+      .then(hash => {
+
+        console.log(email, password);
+        return this.db('users').insert({
+          'email': email,
+          'hash': hash,
+          'time_created': new Date()
+        }).returning('email');
+      })
+      .catch(err => {
+        return { error: { message: err } };
+      });
+  }
+
+  login(email, password) {
+    if(this.checkExistingEmails(email)) {
+      return this.db('users').where('email', email)
+        .limit(1)
+        .then(res => {
+          let hash = Buffer.from(res[0].hash);
+          return bcrypt.compare(password, hash.toString('utf-8'))
+            .then(check => {
+
+              if(check) {
+                return { email: res[0].email };
+              } else { 
+                return { error: { message: 'email_or_password_wrong' } };
+              }
+            });
+        });
+    } else {
+      return { error: { message: 'email_or_password_wrong' } };
+    }
+
     return {};
-  },
-};
+  }
+
+  async checkExistingEmails(email) {
+
+    return this.db('users').where('email', email)
+      .returning('email')
+      .then(mail => mail === email);
+  }
+}
+
+module.exports = User;
