@@ -18,7 +18,7 @@ function prefixRoutes(routes, prefix) {
 }
 
 const validate = async function (decoded, request, h) {
-  console.log(decoded);
+  return { isValid: true };
 }
 
 const init = async () => {

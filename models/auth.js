@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 
-class User {
+class Authentication {
 
   constructor(db) {
     this.db = db;
@@ -17,7 +17,6 @@ class User {
       })
       .then(hash => {
 
-        console.log(email, password);
         return this.db('users').insert({
           'email': email,
           'hash': hash,
@@ -39,7 +38,10 @@ class User {
             .then(check => {
 
               if(check) {
-                return { email: res[0].email };
+                return { 
+                  id: res[0].user_id, 
+                  email: res[0].email 
+                };
               } else { 
                 return { error: { message: 'email_or_password_wrong' } };
               }
@@ -60,4 +62,4 @@ class User {
   }
 }
 
-module.exports = User;
+module.exports = Authentication;
