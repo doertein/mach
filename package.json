@@ -4,39 +4,42 @@
   "description": "a simple todo application similar to wunderlist. KISS",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js -e html,js,css",
-    "start": "node server.js"
+    "test": "lab -v **/*.test.js",
+    "dev": "nodemon index.js -e html,js,css",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/v0rd/mach.git"
+    "url": "git+https://github.com/heiym/mach.git"
   },
   "keywords": [
     "todo"
   ],
-  "author": "v0rd",
+  "author": "heiym",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/v0rd/mach/issues"
+    "url": "https://github.com/heiym/mach/issues"
   },
-  "homepage": "https://github.com/v0rd/mach#readme",
+  "homepage": "https://github.com/heiym/mach#readme",
   "dependencies": {
     "@hapi/boom": "^9.1.0",
+    "@hapi/code": "^8.0.1",
     "@hapi/hapi": "^19.1.1",
     "@hapi/hoek": "^9.0.4",
     "@hapi/inert": "^6.0.1",
     "@hapi/joi": "^17.1.1",
     "@hapi/vision": "^6.0.0",
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "dotenv": "^8.2.0",
     "global": "^4.4.0",
     "hapi-auth-jwt2": "^10.1.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
-    "pg": "^8.0.3"
+    "pg": "^8.2.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.3"
+    "@hapi/lab": "^22.0.4",
+    "eslint": "^7.3.1",
+    "nodemon": "^2.0.4"
   }
 }

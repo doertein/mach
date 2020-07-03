@@ -32,15 +32,19 @@ class Authentication {
     if(this.checkExistingEmails(email)) {
       return this.db('users').where('email', email)
         .limit(1)
-        .then(res => {
-          let hash = Buffer.from(res[0].hash);
+        .then((res) => {
+          if(!res || res.length === 0) return { error: { message: 'email_or_password_wrong' } };
+
+          let { hash, user_id, email } = res[0];
+          hash = Buffer.from(hash);
+
           return bcrypt.compare(password, hash.toString('utf-8'))
             .then(check => {
 
               if(check) {
                 return { 
-                  id: res[0].user_id, 
-                  email: res[0].email 
+                  id: user_id, 
+                  email: email 
                 };
               } else { 
                 return { error: { message: 'email_or_password_wrong' } };
@@ -50,8 +54,6 @@ class Authentication {
     } else {
       return { error: { message: 'email_or_password_wrong' } };
     }
-
-    return {};
   }
 
   async checkExistingEmails(email) {

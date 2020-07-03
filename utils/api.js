@@ -17,7 +17,6 @@ function checkKeys(accepted_keys, keys) {
 
 let requestHelper = {
   validateId: (id) => {
-    console.log(id);
     let validation = Joi
       .number()
       .required()
@@ -25,7 +24,6 @@ let requestHelper = {
       .min(1)
       .validate(id)
 
-    console.log(validation);
     if(validation.error) {
       throw Boom.badRequest('identifier_must_be_integer');
     }

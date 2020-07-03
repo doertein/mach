@@ -1,10 +1,9 @@
 const Boom = require('@hapi/boom');
-const Joi = require('@hapi/joi');
 const Jwt = require('jsonwebtoken');
 const Auth = require('../models/auth.js');
 const Db = require('../db');
 const userSchemas = require('../schemas/users.js');
-const { checkKeys, requestHelper } = require('../utils/api.js');
+const { requestHelper } = require('../utils/api.js');
 require('dotenv').config();
 
 let refreshTokens = [];
@@ -18,8 +17,8 @@ let generateAuthTokens = (payload) => {
 
 class UserController {
 
-  async login(request, h) {
-    const validation = userSchemas.login.validate(request.payload, { abortEarly: false, errors: { escapeHtml: true } });
+  async login(request) {
+    userSchemas.login.validate(request.payload, { abortEarly: false, errors: { escapeHtml: true } });
 
     let auth = new Auth(Db);
     return auth.login(request.payload.email, request.payload.password)
@@ -38,7 +37,7 @@ class UserController {
       });
   }
 
-  async register(request, h) {
+  async register(request) {
     requestHelper.validateSchema(userSchemas.login, request.payload);
 
     let auth = new Auth(Db);
@@ -52,7 +51,7 @@ class UserController {
     return { 'success': true, 'user': user };
   }
 
-  async token(request, h) {
+  async token(request) {
     if(!request.payload || request.payload && !request.payload.refreshToken) {
       throw Boom.badRequest('Missing refresh token.');
     }

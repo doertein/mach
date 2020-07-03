@@ -3,9 +3,6 @@
 //TODO rethink authentication
 //TODO blacklist some tokens i.e. when a user logs out (redis?)
 //TODO use redis for storing tokens / start storing tokens
-const Boom = require('@hapi/boom');
-const Joi = require('@hapi/joi');
-const userSchemas = require('../schemas/users.js');
 const userController = require('../controllers/users.js');
 require('dotenv').config();
 

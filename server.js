@@ -1,13 +1,10 @@
-"use strict";
+'use strict';
 
 const Hapi = require('@hapi/hapi');
 const taskRoutes = require('./routes/tasks.js');
 const listRoutes = require('./routes/lists.js');
 const userRoutes = require('./routes/users.js');
-
-const server = new Hapi.Server({
-  port: '4000',
-});
+const HapiJwt = require('hapi-auth-jwt2');
 
 function prefixRoutes(routes, prefix) {
   routes.map((r) => {
@@ -17,24 +14,42 @@ function prefixRoutes(routes, prefix) {
   return routes;
 }
 
+const server = new Hapi.Server({
+  port: '4000',
+  routes: {
+    cors: {
+      origin: [ 'http://localhost:3000' ]
+    }
+  }
+});
+
+server.route(prefixRoutes(taskRoutes, '/api/v1'));
+server.route(prefixRoutes(listRoutes, '/api/v1'));
+server.route(prefixRoutes(userRoutes, '/api/v1'));
+
+// TODO: pretty secure, huh? ☉ ‿ ⚆
 const validate = async function (decoded, request, h) {
   return { isValid: true };
 }
 
-const init = async () => {
-
-  await server.register(require('hapi-auth-jwt2'));
+server.register(HapiJwt).then( () => {
   server.auth.strategy('jwt', 'jwt', {
     key: process.env.JWT_SECRET,
     validate
   });
 
   server.auth.default('jwt');
+});
 
-  server.route(prefixRoutes(taskRoutes, '/api/v1'));
-  server.route(prefixRoutes(listRoutes, '/api/v1'));
-  server.route(prefixRoutes(userRoutes, '/api/v1'));
+exports.init = async () => {
 
+  await server.initialize();
+  return server;
+};
+
+exports.start = async () => {
+
+  await exports.init();
   server.events.on('log', (event, tags) => {
     if(tags.error) {
       console.log(`server error ${event.error.message}`);
@@ -50,11 +65,10 @@ const init = async () => {
 
   await server.start();
   console.log(`server running at ${server.info.uri}`);
-};
+  return server;
+}
 
 process.on('unhandledRejection', (err) => {
   console.log(err);
   process.exit(1);
 });
-
-init();
