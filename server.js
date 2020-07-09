@@ -32,16 +32,10 @@ const validate = async function (decoded, request, h) {
   return { isValid: true };
 }
 
-server.register(HapiJwt).then( () => {
-  server.auth.strategy('jwt', 'jwt', {
-    key: process.env.JWT_SECRET,
-    validate
-  });
-
-  server.auth.default('jwt');
-});
 
 exports.init = async () => {
+
+  await server.register(HapiJwt, { once: true });
 
   await server.initialize();
   return server;
@@ -50,6 +44,14 @@ exports.init = async () => {
 exports.start = async () => {
 
   await exports.init();
+
+  server.auth.strategy('jwt', 'jwt', {
+    key: process.env.JWT_SECRET,
+    validate
+  });
+
+  server.auth.default('jwt');
+
   server.events.on('log', (event, tags) => {
     if(tags.error) {
       console.log(`server error ${event.error.message}`);

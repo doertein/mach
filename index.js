@@ -1,3 +1,3 @@
-const { start, init } = require('./server.js');
+const { start } = require('./server.js');
 
 start();
