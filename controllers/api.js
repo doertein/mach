@@ -9,7 +9,7 @@ class ApiController {
    * @param {object} keys the given keys 
    * 
    */
-  checkKeys(accepted_keys, keys) {
+  checkAcceptedKeys(accepted_keys, keys) {
     // filter requests with anomaly in keys
     let diff = [];
     keys.filter((key) => {

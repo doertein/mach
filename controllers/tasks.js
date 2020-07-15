@@ -19,7 +19,7 @@ class taskController extends ApiController {
       throw Boom.notFound('no_resource_found');
     }
 
-    checkKeys(Object.keys(task[0]), Object.keys(payload));
+    this.checkAcceptedKeys(Object.keys(task[0]), Object.keys(payload));
     // PARAMETER VALIDATION
 
     if(payload.list_id) {

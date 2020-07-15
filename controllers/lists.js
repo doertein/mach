@@ -14,7 +14,7 @@ class listController extends ApiController {
 
     this.validateId(request.params.list_id);
     this.validateSchema(listSchemas.patchList, payload);
-    this.checkKeys(['name', 'owner_id'], Object.keys(payload));
+    this.checkAcceptedKeys(['name', 'owner_id'], Object.keys(payload));
 
     let list = await List.getList(request.params.list_id);
     if (list.length === 0) {
