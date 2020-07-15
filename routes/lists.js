@@ -1,36 +1,35 @@
 "use strict"; 
 const listController = require('../controllers/lists.js');
 
-//TODO implement authorization process
 module.exports = [ 
   {
     method: 'GET',
     path: '/lists',
-    handler: listController.getLists
+    handler: (request, h) => listController.getLists(request, h)
   },
   {
     method: 'GET',
     path: '/lists/{list_id}',
-    handler: listController.getList
+    handler: (request, h) => listController.getList(request, h)
   },
   {
     method: 'GET',
     path: '/lists/{list_id}/tasks',
-    handler: listController.getTasks
+    handler: (request, h) => listController.getTasks(request, h)
   },
   {
     method: 'POST',
     path: '/lists',
-    handler: listController.newList
+    handler: (request, h) => listController.newList(request, h)
   },
   {
     method: 'DELETE',
     path: '/lists/{list_id}',
-    handler: listController.deleteList
+    handler: (request, h) => listController.deleteList(request, h)
   },
   {
     method: 'PATCH',
     path: '/lists/{list_id}',
-    handler: listController.editList
+    handler: (request, h) => listController.editList(request, h)
   },
 ];

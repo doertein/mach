@@ -4,7 +4,7 @@
   "description": "a simple todo application similar to wunderlist. KISS",
   "main": "server.js",
   "scripts": {
-    "test": "lab -v **/*.test.js",
+    "test": "lab -v test/**/*.test.js",
     "dev": "nodemon index.js -e html,js,css",
     "start": "node index.js"
   },
@@ -34,12 +34,12 @@
     "global": "^4.4.0",
     "hapi-auth-jwt2": "^10.1.0",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.21.1",
-    "pg": "^8.2.1"
+    "knex": "^0.21.2",
+    "pg": "^8.3.0"
   },
   "devDependencies": {
     "@hapi/lab": "^22.0.4",
-    "eslint": "^7.3.1",
+    "eslint": "^7.4.0",
     "nodemon": "^2.0.4"
   }
 }

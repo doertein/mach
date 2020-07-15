@@ -5,26 +5,26 @@ module.exports = [
   {
     method: 'GET',
     path: '/tasks',
-    handler: taskController.getTasks
+    handler: (request, h) => taskController.getTasks(request, h)
   },
   {
     method: 'GET',
     path: '/tasks/{task_id}',
-    handler: taskController.getTask
+    handler: (request, h) => taskController.getTask(request, h)
   },
   {
     method: 'POST',
     path: '/tasks',
-    handler: taskController.newTask,
+    handler: (request, h) => taskController.newTask(request, h)
   },
   {
     method: 'DELETE',
     path: '/tasks/{task_id}',
-    handler: taskController.deleteTask,
+    handler: (request, h) => taskController.deleteTask(request, h)
   },
   {
     method: 'PATCH',
     path: '/tasks/{task_id}',
-    handler: taskController.editTask
+    handler: (request, h) => taskController.editTask(request, h)
   }
 ];

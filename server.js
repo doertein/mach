@@ -6,12 +6,12 @@ const listRoutes = require('./routes/lists.js');
 const userRoutes = require('./routes/users.js');
 const HapiJwt = require('hapi-auth-jwt2');
 
-function prefixRoutes(routes, prefix) {
-  routes.map((r) => {
+function prefixRoute(route, prefix) {
+  route.map((r) => {
     r.path = `${prefix}${r.path}`;
   });
 
-  return routes;
+  return route;
 }
 
 const server = new Hapi.Server({
@@ -23,13 +23,17 @@ const server = new Hapi.Server({
   }
 });
 
-server.route(prefixRoutes(taskRoutes, '/api/v1'));
-server.route(prefixRoutes(listRoutes, '/api/v1'));
-server.route(prefixRoutes(userRoutes, '/api/v1'));
+server.route(prefixRoute(taskRoutes, '/api/v1'));
+server.route(prefixRoute(listRoutes, '/api/v1'));
+server.route(prefixRoute(userRoutes, '/api/v1'));
 
 // TODO: pretty secure, huh? ☉ ‿ ⚆
-const validate = async function (decoded, request, h) {
-  return { isValid: true };
+const validate = async function (decoded) {
+  if(decoded.user) {
+    return { isValid: true }
+  }
+
+  return { isValid: false }
 }
 
 

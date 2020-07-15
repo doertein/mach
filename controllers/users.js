@@ -3,7 +3,7 @@ const Jwt = require('jsonwebtoken');
 const Auth = require('../models/auth.js');
 const Db = require('../db');
 const userSchemas = require('../schemas/users.js');
-const { requestHelper } = require('../utils/api.js');
+const ApiController = require('./api.js');
 require('dotenv').config();
 
 let refreshTokens = [];
@@ -15,10 +15,10 @@ let generateAuthTokens = (payload) => {
   return { 'accessToken': accessToken, 'refreshToken': refreshToken };
 }
 
-class UserController {
+class UserController extends ApiController {
 
   async login(request) {
-    userSchemas.login.validate(request.payload, { abortEarly: false, errors: { escapeHtml: true } });
+    this.validateSchema(userSchemas.login, request.payload);
 
     let auth = new Auth(Db);
     return auth.login(request.payload.email, request.payload.password)
@@ -38,7 +38,7 @@ class UserController {
   }
 
   async register(request) {
-    requestHelper.validateSchema(userSchemas.login, request.payload);
+    this.validateSchema(userSchemas.login, request.payload);
 
     let auth = new Auth(Db);
     let user = await auth.register(request.payload.email, request.payload.password);

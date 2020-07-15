@@ -2,16 +2,17 @@ const Task = require('../models/tasks.js');
 const List = require('../models/lists.js');
 const Boom = require('@hapi/boom');
 const taskSchemas = require('../schemas/tasks.js');
-const { checkKeys, requestHelper } = require('../utils/api.js');
+const ApiController = require('./api.js');
 
-class taskController {
+class taskController extends ApiController {
 
+  //TODO: way to complicated
   async editTask(request) {
     let payload = request.payload;
     let allowed_to_remove = ['asignee_id', 'time_reminder', 'due_date'];
 
-    requestHelper.validateId(request.params.task_id);
-    requestHelper.validateSchema(taskSchemas.patchTask, payload);
+    this.validateId(request.params.task_id);
+    this.validateSchema(taskSchemas.patchTask, payload);
 
     let task = await Task.getTask(request.params.task_id);
     if(task.length === 0) { 
@@ -29,10 +30,11 @@ class taskController {
       task[0].name = payload.name;
     }
 
-    if(payload.compayloadeted && payload.user_compayloadeted) {
-      task[0].compayloadeted = payload.compayloadeted;
-      task[0].user_compayloadeted = payload.user_compayloadeted ? payload.user_compayloadeted : null;
-      task[0].time_compayloadeted = payload.compayloadeted === true ? new Date() : null;
+    // task is completed. so save date 6 user
+    if(payload.completed && payload.user_completed) {
+      task[0].completed = payload.completed;
+      task[0].user_completed = payload.user_completed ? payload.user_completed : null;
+      task[0].time_completed = payload.time_completed === true ? new Date() : null;
     }
 
     if(payload.asignee_id) {
@@ -60,7 +62,7 @@ class taskController {
   }
 
   async deleteTask(request, h) {
-    requestHelper.validateId(request.params.task_id);
+    this.validateId(request.params.task_id);
 
     let task = await Task.getTask(request.params.task_id);
     if(task.length === 0) { 
@@ -76,16 +78,14 @@ class taskController {
   async newTask(request, h) {
     let payload = request.payload;
 
-    requestHelper.validateSchema(taskSchemas.newTask, payload);
+    this.validateSchema(taskSchemas.newTask, payload);
 
     return Task.newTask(payload.name, payload.list_id, payload.user_created)
-      .then(data => {
-        return h.response().code(201);
-      });
+      .then(() => h.response().code(201));
   }
 
   async getTask(request) {
-    requestHelper.validateId(request.params.task_id);
+    this.validateId(request.params.task_id);
 
     let task = await Task.getTask(request.params.task_id);
     if(task.length === 0) { 
@@ -100,7 +100,7 @@ class taskController {
       throw Boom.badRequest('missing_list_id');
     }
 
-    requestHelper.validateId(request.query.list_id);
+    this.validateId(request.query.list_id);
 
     let list = await List.getList(request.query.list_id);
     if(list.length === 0) {

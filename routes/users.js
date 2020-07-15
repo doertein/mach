@@ -10,7 +10,7 @@ module.exports = [
   {
     method: 'POST',
     path: '/users/register',
-    handler: userController.register,
+    handler: (request, h) => userController.register(request, h),
     options: {
       auth: false
     }
@@ -18,7 +18,7 @@ module.exports = [
   {
     method: 'POST',
     path: '/users/login',
-    handler: userController.login,
+    handler: (request, h) => userController.login(request, h),
     options: {
       auth: false
     }
@@ -26,7 +26,7 @@ module.exports = [
   {
     method: 'POST',
     path: '/users/token',
-    handler: userController.token,
+    handler: (request, h) => userController.token(request, h),
     options: {
       auth: false
     }
