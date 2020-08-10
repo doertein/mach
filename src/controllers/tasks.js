@@ -6,59 +6,55 @@ const ApiController = require('./api.js');
 
 class taskController extends ApiController {
 
-  //TODO: way to complicated
+  //TODO: way to complicated. refactor.
   async editTask(request) {
     let payload = request.payload;
-    let allowed_to_remove = ['asignee_id', 'time_reminder', 'due_date'];
+    let allowedToRemove = ['asignee_id', 'time_reminder', 'due_date'];
 
     this.validateId(request.params.task_id);
     this.validateSchema(taskSchemas.patchTask, payload);
 
-    let task = await Task.getTask(request.params.task_id);
-    if(task.length === 0) { 
+    let [task] = await Task.getTask(request.params.task_id);
+    if(!task) { 
       throw Boom.notFound('no_resource_found');
     }
 
-    this.checkAcceptedKeys(Object.keys(task[0]), Object.keys(payload));
-    // PARAMETER VALIDATION
+    this.checkAcceptedKeys(Object.keys(task), Object.keys(payload));
 
+    // patch provided details
     if(payload.list_id) {
-      task[0].list_id = payload.list_id;
+      task.list_id = payload.list_id;
     }
 
     if(payload.name) {
-      task[0].name = payload.name;
+      task.name = payload.name;
     }
 
     // task is completed. so save date 6 user
     if(payload.completed && payload.user_completed) {
-      task[0].completed = payload.completed;
-      task[0].user_completed = payload.user_completed ? payload.user_completed : null;
-      task[0].time_completed = payload.time_completed === true ? new Date() : null;
+      task.completed = payload.completed;
+      task.user_completed = payload.user_completed ? payload.user_completed : null;
+      task.time_completed = payload.time_completed === true ? new Date() : null;
     }
 
     if(payload.asignee_id) {
-      task[0].asignee_id = payload.asignee_id;
+      task.asignee_id = payload.asignee_id;
     }
 
     if(payload.due_date) {
-      task[0].due_date = payload.due_date;
+      task.due_date = payload.due_date;
     }
 
     if(payload.time_reminder) {
-      task[0].time_reminder = new Date(payload.time_reminder);
+      task.time_reminder = new Date(payload.time_reminder);
     }
 
-    // remove attributes 
+    // remove attributes for deletion 
     if(payload.remove && payload.remove.length > 0) {
-      payload.remove.filter(key => {
-        if(allowed_to_remove.includes(key)) {
-          task[0][key] = null;
-        }
-      });
+      task = this.removeKeys(task, payload.remove, allowedToRemove);
     }
 
-    return Task.editTask(task[0]);
+    return Task.editTask(task);
   }
 
   async deleteTask(request, h) {
@@ -70,9 +66,7 @@ class taskController extends ApiController {
     }
 
     return Task.deleteTask(request.params.task_id)
-      .then(() => {
-        return h.response().code(204);
-      });
+      .then(() => h.response().code(204));
   }
 
   async newTask(request, h) {

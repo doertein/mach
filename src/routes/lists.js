@@ -1,5 +1,5 @@
 "use strict"; 
-const listController = require('../controllers/lists.js').default;
+const listController = require('../controllers/lists.js');
 
 module.exports = [ 
   {

@@ -1,7 +1,7 @@
 const Lab = require('@hapi/lab');
 const { expect } = require('@hapi/code');
 const { afterEach, beforeEach, before, describe, it } = exports.lab = Lab.script();
-const { init } = require('../../server.js');
+const { init } = require('../../src/server.js');
 const Knex = require('knex');
 const KnexConfig = require('../../knexfile.js')['development'];
 
@@ -12,7 +12,7 @@ describe('testing against the list api - ' , () => {
   let credentials = {
     user: {
       id: 1,
-      email: 'test@nartum.de'
+      email: 'test@bifroest.de'
     },
     iat: new Date().getTime(),
     exp: new Date().getTime() + 86400000

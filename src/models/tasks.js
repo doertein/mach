@@ -1,7 +1,6 @@
 const Db = require('../db');
 
 module.exports = class Task {
-
   static getTasks(list_id) {
     return Db('tasks').where('list_id', list_id).orderBy('completed');
   }

@@ -3,7 +3,6 @@ const Joi = require('@hapi/joi');
 
 class ApiController {
 
-  // TODO: maybe belongs to TaskController
   removeKeys(obj, toRemove, allowedToRemove) {
       toRemove.filter(key => {
         if(allowedToRemove.includes(key)) {

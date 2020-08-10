@@ -17,9 +17,7 @@ function prefixRoute(route, prefix) {
 const server = new Hapi.Server({
   port: '4000',
   routes: {
-    cors: {
-      origin: [ 'http://localhost:3000' ]
-    }
+    cors: true
   }
 });
 
