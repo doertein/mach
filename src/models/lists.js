@@ -7,7 +7,7 @@ module.exports = class List {
   }
 
   static getList(list_id) {
-    return Db('lists').where('list_id', list_id);
+    return Db('lists').where('list_id', list_id).first();
   }
 
   static newList(name, owner_id) {
